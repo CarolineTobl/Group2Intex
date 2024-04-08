@@ -1,4 +1,5 @@
 using Group2Intex.Data;
+using Group2Intex.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,20 @@ namespace Group2Intex
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             builder.Services.AddControllersWithViews();
 
+            //added
+            builder.Services.AddScoped<IIntexRepository, EFIntexRepository>();
+
+            //added
+            builder.Services.AddRazorPages();
+
+            //added
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddSession();
+
+            //added
+            builder.Services.AddScoped<Cart>(sp => SessionCart.GetCart(sp));
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -37,13 +52,18 @@ namespace Group2Intex
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            //added
+            app.UseSession();
+
             app.UseRouting();
 
             app.UseAuthorization();
 
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapControllerRoute("pagenumandtype", "{projectType}/{pageNum}", new { Controller = "Home", action = "Index" });
+            app.MapControllerRoute("pagination", "{pageNum}", new { Controller = "Home", action = "Index", pageNum = 1 });
+            app.MapControllerRoute("projectType", "{projectType}", new { Controller = "Home", action = "Index", pageNum = 1 });
+            app.MapDefaultControllerRoute();
+
             app.MapRazorPages();
 
             app.Run();
